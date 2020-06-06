@@ -8,7 +8,6 @@ import net.minecraft.inventory.Container;
 import net.minecraft.inventory.ContainerRepair;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
-import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AnvilUpdateEvent;
 import org.apache.commons.lang3.StringUtils;
@@ -29,23 +28,25 @@ import java.util.Map;
 public abstract class ContainerRepairMixin extends Container {
 
     @Shadow
+    @Final
     private IInventory inputSlots;
 
     @Shadow
     public int maximumCost;
 
     @Shadow
+    @Final
     private IInventory outputSlot;
 
     @Shadow
     public int materialCost;
 
     @Shadow
-    @Final
-    private EntityPlayer thePlayer;
+    private String repairedItemName;
 
     @Shadow
-    private String repairedItemName;
+    @Final
+    private EntityPlayer thePlayer;
 
     /**
      * @author Enaium
@@ -120,12 +121,12 @@ public abstract class ContainerRepairMixin extends Container {
                     Map<Enchantment, Integer> map1 = EnchantmentHelper.getEnchantments(itemstack2);
                     Iterator var19 = map1.keySet().iterator();
 
-                    label178:
+                    label174:
                     while (true) {
                         Enchantment enchantment1;
                         do {
                             if (!var19.hasNext()) {
-                                break label178;
+                                break label174;
                             }
 
                             enchantment1 = (Enchantment) var19.next();
@@ -173,7 +174,7 @@ public abstract class ContainerRepairMixin extends Container {
 
                                             i += k3 * j3;
                                         }
-                                        continue label178;
+                                        continue label174;
                                     }
 
                                     enchantment = (Enchantment) var15.next();
