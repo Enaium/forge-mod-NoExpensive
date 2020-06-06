@@ -1,0 +1,16 @@
+[
+  {
+    "modid": "noexpensive",
+    "name": "NoExpensive",
+    "description": "",
+    "version": "${version}",
+    "mcversion": "${mcversion}",
+    "url": "https://github.com/Enaium-ForgeMC/NoExpensive",
+    "updateUrl": "",
+    "authorList": ["Enaium"],
+    "credits": "",
+    "logoFile": "",
+    "screenshots": [],
+    "dependencies": []
+  }
+]

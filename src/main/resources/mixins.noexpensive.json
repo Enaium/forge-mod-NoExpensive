@@ -1,0 +1,9 @@
+{
+  "required": true,
+  "package": "cn.enaium.noexpensive.injection.mixins",
+  "refmap": "mixins.noexpensive.refmap.json",
+  "compatibilityLevel": "JAVA_8",
+  "mixins": [
+    "ContainerRepairMixin"
+  ]
+}
