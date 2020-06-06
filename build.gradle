@@ -21,7 +21,7 @@ buildscript {
     }
 
     dependencies {
-        classpath "net.minecraftforge.gradle:ForgeGradle:2.1-SNAPSHOT"
+        classpath 'net.minecraftforge.gradle:ForgeGradle:2.2-SNAPSHOT'
         classpath "gradle.plugin.com.matthewprenger:CurseGradle:1.0.10"
         classpath "org.spongepowered:mixingradle:0.6-SNAPSHOT"
         classpath "com.github.jengelman.gradle.plugins:shadow:4.0.4"
@@ -45,7 +45,7 @@ repositories {
     }
 }
 
-version = "1.8.9-Forge-1.0.1"
+version = "1.9.4-Forge-1.0.1"
 group = "cn.enaium"
 archivesBaseName = "NE"
 
@@ -54,10 +54,9 @@ targetCompatibility = JavaVersion.VERSION_1_8
 compileJava.options.encoding = 'UTF-8'
 
 minecraft {
-    version = "1.8.9-11.15.1.2318-1.8.9"
+    version = "1.9.4-12.17.0.1976"
     runDir = "run"
-    mappings = "stable_22"
-    makeObfSourceJar = true
+    mappings = "snapshot_20160518"
 }
 
 dependencies {
