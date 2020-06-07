@@ -45,7 +45,7 @@ repositories {
     }
 }
 
-version = "1.10.2-Forge-1.0.1"
+version = "1.10.2-Forge-1.1.1"
 group = "cn.enaium"
 archivesBaseName = "NE"
 

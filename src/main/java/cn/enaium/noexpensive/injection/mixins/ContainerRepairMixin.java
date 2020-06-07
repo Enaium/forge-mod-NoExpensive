@@ -1,7 +1,9 @@
 package cn.enaium.noexpensive.injection.mixins;
 
 import net.minecraft.enchantment.Enchantment;
+import net.minecraft.enchantment.EnchantmentArrowInfinite;
 import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.enchantment.EnchantmentMending;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.inventory.Container;
@@ -179,7 +181,7 @@ public abstract class ContainerRepairMixin extends Container {
 
                                     enchantment = (Enchantment) var15.next();
                                 } while (enchantment == enchantment1);
-                            } while (enchantment1.canApplyTogether(enchantment) && enchantment.canApplyTogether(enchantment1));
+                            } while (enchantment1.canApplyTogether(enchantment) && canApplyTogether(enchantment, enchantment1));
 
                             flag1 = false;
                             ++i;
@@ -248,6 +250,13 @@ public abstract class ContainerRepairMixin extends Container {
             this.materialCost = e.getMaterialCost();
             return false;
         }
+    }
+
+    private boolean canApplyTogether(Enchantment enchantment1, Enchantment enchantment2) {
+        if ((enchantment1 instanceof EnchantmentArrowInfinite && enchantment2 instanceof EnchantmentMending) || (enchantment2 instanceof EnchantmentArrowInfinite && enchantment1 instanceof EnchantmentMending)) {
+            return true;
+        }
+        return enchantment1.canApplyTogether(enchantment2);
     }
 
 }
