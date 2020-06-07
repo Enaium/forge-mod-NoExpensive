@@ -7,7 +7,7 @@ import net.minecraft.init.Items;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.ContainerRepair;
 import net.minecraft.inventory.IInventory;
-import net.minecraft.item.ItemNameTag;
+import net.minecraft.item.ItemEnchantedBook;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AnvilUpdateEvent;
@@ -29,25 +29,25 @@ import java.util.Map;
 public abstract class ContainerRepairMixin extends Container {
 
     @Shadow
-    @Final
-    private IInventory inputSlots;
+    public int maximumCost;
 
     @Shadow
-    public int maximumCost;
+    @Final
+    private IInventory inputSlots;
 
     @Shadow
     @Final
     private IInventory outputSlot;
 
     @Shadow
-    @Final
-    private EntityPlayer player;
-
-    @Shadow
     public int materialCost;
 
     @Shadow
     private String repairedItemName;
+
+    @Shadow
+    @Final
+    private EntityPlayer player;
 
     /**
      * @author Enaium
@@ -64,10 +64,6 @@ public abstract class ContainerRepairMixin extends Container {
             this.maximumCost = 0;
         } else {
             ItemStack itemstack1 = itemstack.copy();
-            if (itemstack1.getCount() > 1 && !this.player.capabilities.isCreativeMode && !(itemstack1.getItem() instanceof ItemNameTag)) {
-                itemstack1.setCount(1);
-            }
-
             ItemStack itemstack2 = this.inputSlots.getStackInSlot(1);
             Map<Enchantment, Integer> map = EnchantmentHelper.getEnchantments(itemstack1);
             j = j + itemstack.getRepairCost() + (itemstack2.isEmpty() ? 0 : itemstack2.getRepairCost());
@@ -79,7 +75,7 @@ public abstract class ContainerRepairMixin extends Container {
                     return;
                 }
 
-                flag = itemstack2.getItem() == Items.ENCHANTED_BOOK && !Items.ENCHANTED_BOOK.getEnchantments(itemstack2).hasNoTags();
+                flag = itemstack2.getItem() == Items.ENCHANTED_BOOK && !ItemEnchantedBook.getEnchantments(itemstack2).isEmpty();
                 int i1;
                 int j1;
                 if (itemstack1.isItemStackDamageable() && itemstack1.getItem().getIsRepairable(itemstack, itemstack2)) {
@@ -115,7 +111,7 @@ public abstract class ContainerRepairMixin extends Container {
                             l1 = 0;
                         }
 
-                        if (l1 < itemstack1.getMetadata()) {
+                        if (l1 < itemstack1.getItemDamage()) {
                             itemstack1.setItemDamage(l1);
                             i += 2;
                         }
@@ -126,7 +122,7 @@ public abstract class ContainerRepairMixin extends Container {
                     boolean flag3 = false;
                     Iterator var23 = map1.keySet().iterator();
 
-                    label178:
+                    label177:
                     while (true) {
                         Enchantment enchantment1;
                         do {
@@ -136,7 +132,7 @@ public abstract class ContainerRepairMixin extends Container {
                                     this.maximumCost = 0;
                                     return;
                                 }
-                                break label178;
+                                break label177;
                             }
 
                             enchantment1 = (Enchantment) var23.next();
@@ -154,7 +150,7 @@ public abstract class ContainerRepairMixin extends Container {
 
                         while (var17.hasNext()) {
                             Enchantment enchantment = (Enchantment) var17.next();
-                            if (enchantment != enchantment1 && !enchantment1.func_191560_c(enchantment)) {
+                            if (enchantment != enchantment1 && !enchantment1.isCompatibleWith(enchantment)) {
                                 flag1 = false;
                                 ++i;
                             }
@@ -189,6 +185,9 @@ public abstract class ContainerRepairMixin extends Container {
                             }
 
                             i += k3 * j2;
+                            if (itemstack.getCount() > 1) {
+                                i = 40;
+                            }
                         }
                     }
                 }
