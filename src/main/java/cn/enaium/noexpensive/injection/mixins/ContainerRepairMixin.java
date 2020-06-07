@@ -7,7 +7,6 @@ import net.minecraft.init.Items;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.ContainerRepair;
 import net.minecraft.inventory.IInventory;
-import net.minecraft.item.ItemNameTag;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AnvilUpdateEvent;
@@ -40,14 +39,14 @@ public abstract class ContainerRepairMixin extends Container {
     private IInventory outputSlot;
 
     @Shadow
-    @Final
-    private EntityPlayer player;
-
-    @Shadow
     public int materialCost;
 
     @Shadow
     private String repairedItemName;
+
+    @Shadow
+    @Final
+    private EntityPlayer thePlayer;
 
     /**
      * @author Enaium
@@ -59,22 +58,18 @@ public abstract class ContainerRepairMixin extends Container {
         int i = 0;
         int j = 0;
         int k = 0;
-        if (itemstack.isEmpty()) {
-            this.outputSlot.setInventorySlotContents(0, ItemStack.EMPTY);
+        if (itemstack == null) {
+            this.outputSlot.setInventorySlotContents(0, (ItemStack) null);
             this.maximumCost = 0;
         } else {
             ItemStack itemstack1 = itemstack.copy();
-            if (itemstack1.getCount() > 1 && !this.player.capabilities.isCreativeMode && !(itemstack1.getItem() instanceof ItemNameTag)) {
-                itemstack1.setCount(1);
-            }
-
             ItemStack itemstack2 = this.inputSlots.getStackInSlot(1);
             Map<Enchantment, Integer> map = EnchantmentHelper.getEnchantments(itemstack1);
-            j = j + itemstack.getRepairCost() + (itemstack2.isEmpty() ? 0 : itemstack2.getRepairCost());
+            j = j + itemstack.getRepairCost() + (itemstack2 == null ? 0 : itemstack2.getRepairCost());
             this.materialCost = 0;
             boolean flag = false;
-            int k2;
-            if (!itemstack2.isEmpty()) {
+            int i2;
+            if (itemstack2 != null) {
                 if (!onAnvilChange(itemstack, itemstack2, this.outputSlot, this.repairedItemName, j)) {
                     return;
                 }
@@ -83,115 +78,118 @@ public abstract class ContainerRepairMixin extends Container {
                 int i1;
                 int j1;
                 if (itemstack1.isItemStackDamageable() && itemstack1.getItem().getIsRepairable(itemstack, itemstack2)) {
-                    k2 = Math.min(itemstack1.getItemDamage(), itemstack1.getMaxDamage() / 4);
-                    if (k2 <= 0) {
-                        this.outputSlot.setInventorySlotContents(0, ItemStack.EMPTY);
+                    i2 = Math.min(itemstack1.getItemDamage(), itemstack1.getMaxDamage() / 4);
+                    if (i2 <= 0) {
+                        this.outputSlot.setInventorySlotContents(0, (ItemStack) null);
                         this.maximumCost = 0;
                         return;
                     }
 
-                    for (i1 = 0; k2 > 0 && i1 < itemstack2.getCount(); ++i1) {
-                        j1 = itemstack1.getItemDamage() - k2;
+                    for (i1 = 0; i2 > 0 && i1 < itemstack2.stackSize; ++i1) {
+                        j1 = itemstack1.getItemDamage() - i2;
                         itemstack1.setItemDamage(j1);
                         ++i;
-                        k2 = Math.min(itemstack1.getItemDamage(), itemstack1.getMaxDamage() / 4);
+                        i2 = Math.min(itemstack1.getItemDamage(), itemstack1.getMaxDamage() / 4);
                     }
 
                     this.materialCost = i1;
                 } else {
                     if (!flag && (itemstack1.getItem() != itemstack2.getItem() || !itemstack1.isItemStackDamageable())) {
-                        this.outputSlot.setInventorySlotContents(0, ItemStack.EMPTY);
+                        this.outputSlot.setInventorySlotContents(0, (ItemStack) null);
                         this.maximumCost = 0;
                         return;
                     }
 
+                    int i3;
+                    int j3;
                     if (itemstack1.isItemStackDamageable() && !flag) {
-                        k2 = itemstack.getMaxDamage() - itemstack.getItemDamage();
+                        i2 = itemstack.getMaxDamage() - itemstack.getItemDamage();
                         i1 = itemstack2.getMaxDamage() - itemstack2.getItemDamage();
                         j1 = i1 + itemstack1.getMaxDamage() * 12 / 100;
-                        int k1 = k2 + j1;
-                        int l1 = itemstack1.getMaxDamage() - k1;
-                        if (l1 < 0) {
-                            l1 = 0;
+                        i3 = i2 + j1;
+                        j3 = itemstack1.getMaxDamage() - i3;
+                        if (j3 < 0) {
+                            j3 = 0;
                         }
 
-                        if (l1 < itemstack1.getMetadata()) {
-                            itemstack1.setItemDamage(l1);
+                        if (j3 < itemstack1.getMetadata()) {
+                            itemstack1.setItemDamage(j3);
                             i += 2;
                         }
                     }
 
                     Map<Enchantment, Integer> map1 = EnchantmentHelper.getEnchantments(itemstack2);
-                    boolean flag2 = false;
-                    boolean flag3 = false;
-                    Iterator var23 = map1.keySet().iterator();
+                    Iterator var19 = map1.keySet().iterator();
 
-                    label178:
+                    label174:
                     while (true) {
                         Enchantment enchantment1;
                         do {
-                            if (!var23.hasNext()) {
-                                if (flag3 && !flag2) {
-                                    this.outputSlot.setInventorySlotContents(0, ItemStack.EMPTY);
-                                    this.maximumCost = 0;
-                                    return;
-                                }
-                                break label178;
+                            if (!var19.hasNext()) {
+                                break label174;
                             }
 
-                            enchantment1 = (Enchantment) var23.next();
+                            enchantment1 = (Enchantment) var19.next();
                         } while (enchantment1 == null);
 
-                        int i2 = map.containsKey(enchantment1) ? (Integer) map.get(enchantment1) : 0;
-                        int j2 = (Integer) map1.get(enchantment1);
-                        j2 = i2 == j2 ? j2 + 1 : Math.max(j2, i2);
+                        i3 = map.containsKey(enchantment1) ? (Integer) map.get(enchantment1) : 0;
+                        j3 = (Integer) map1.get(enchantment1);
+                        j3 = i3 == j3 ? j3 + 1 : Math.max(j3, i3);
                         boolean flag1 = enchantment1.canApply(itemstack);
-                        if (this.player.capabilities.isCreativeMode || itemstack.getItem() == Items.ENCHANTED_BOOK) {
+                        if (this.thePlayer.capabilities.isCreativeMode || itemstack.getItem() == Items.ENCHANTED_BOOK) {
                             flag1 = true;
                         }
 
-                        Iterator var17 = map.keySet().iterator();
+                        Iterator var15 = map.keySet().iterator();
 
-                        while (var17.hasNext()) {
-                            Enchantment enchantment = (Enchantment) var17.next();
-                            if (enchantment != enchantment1 && !enchantment1.func_191560_c(enchantment)) {
-                                flag1 = false;
-                                ++i;
-                            }
-                        }
+                        while (true) {
+                            Enchantment enchantment;
+                            do {
+                                do {
+                                    if (!var15.hasNext()) {
+                                        if (flag1) {
+                                            if (j3 > enchantment1.getMaxLevel()) {
+                                                j3 = enchantment1.getMaxLevel();
+                                            }
 
-                        if (!flag1) {
-                            flag3 = true;
-                        } else {
-                            flag2 = true;
-                            if (j2 > enchantment1.getMaxLevel()) {
-                                j2 = enchantment1.getMaxLevel();
-                            }
+                                            map.put(enchantment1, j3);
+                                            int k3 = 0;
+                                            switch (enchantment1.getRarity()) {
+                                                case COMMON:
+                                                    k3 = 1;
+                                                    break;
+                                                case UNCOMMON:
+                                                    k3 = 2;
+                                                    break;
+                                                case RARE:
+                                                    k3 = 4;
+                                                    break;
+                                                case VERY_RARE:
+                                                    k3 = 8;
+                                            }
 
-                            map.put(enchantment1, j2);
-                            int k3 = 0;
-                            switch (enchantment1.getRarity()) {
-                                case COMMON:
-                                    k3 = 1;
-                                    break;
-                                case UNCOMMON:
-                                    k3 = 2;
-                                    break;
-                                case RARE:
-                                    k3 = 4;
-                                    break;
-                                case VERY_RARE:
-                                    k3 = 8;
-                            }
+                                            if (flag) {
+                                                k3 = Math.max(1, k3 / 2);
+                                            }
 
-                            if (flag) {
-                                k3 = Math.max(1, k3 / 2);
-                            }
+                                            i += k3 * j3;
+                                        }
+                                        continue label174;
+                                    }
 
-                            i += k3 * j2;
+                                    enchantment = (Enchantment) var15.next();
+                                } while (enchantment == enchantment1);
+                            } while (enchantment1.canApplyTogether(enchantment) && enchantment.canApplyTogether(enchantment1));
+
+                            flag1 = false;
+                            ++i;
                         }
                     }
                 }
+            }
+
+            if (flag && !itemstack1.getItem().isBookEnchantable(itemstack1, itemstack2)) {
+                itemstack1 = null;
             }
 
             if (StringUtils.isBlank(this.repairedItemName)) {
@@ -206,34 +204,30 @@ public abstract class ContainerRepairMixin extends Container {
                 itemstack1.setStackDisplayName(this.repairedItemName);
             }
 
-            if (flag && !itemstack1.getItem().isBookEnchantable(itemstack1, itemstack2)) {
-                itemstack1 = ItemStack.EMPTY;
-            }
-
             this.maximumCost = j + i;
             if (i <= 0) {
-                itemstack1 = ItemStack.EMPTY;
+                itemstack1 = null;
             }
 
             if (k == i && k > 0 && this.maximumCost >= 40) {
                 this.maximumCost = 39;
             }
 
-            if (this.maximumCost >= 40 && !this.player.capabilities.isCreativeMode) {
+            if (this.maximumCost >= 40 && !this.thePlayer.capabilities.isCreativeMode) {
                 this.maximumCost = 39;
             }
 
-            if (!itemstack1.isEmpty()) {
-                k2 = itemstack1.getRepairCost();
-                if (!itemstack2.isEmpty() && k2 < itemstack2.getRepairCost()) {
-                    k2 = itemstack2.getRepairCost();
+            if (itemstack1 != null) {
+                i2 = itemstack1.getRepairCost();
+                if (itemstack2 != null && i2 < itemstack2.getRepairCost()) {
+                    i2 = itemstack2.getRepairCost();
                 }
 
                 if (k != i || k == 0) {
-                    k2 = k2 * 2 + 1;
+                    i2 = i2 * 2 + 1;
                 }
 
-                itemstack1.setRepairCost(k2);
+                itemstack1.setRepairCost(i2);
                 EnchantmentHelper.setEnchantments(map, itemstack1);
             }
 
@@ -246,7 +240,7 @@ public abstract class ContainerRepairMixin extends Container {
         AnvilUpdateEvent e = new AnvilUpdateEvent(left, right, name, baseCost);
         if (MinecraftForge.EVENT_BUS.post(e)) {
             return false;
-        } else if (e.getOutput().isEmpty()) {
+        } else if (e.getOutput() == null) {
             return true;
         } else {
             outputSlot.setInventorySlotContents(0, e.getOutput());
@@ -255,6 +249,5 @@ public abstract class ContainerRepairMixin extends Container {
             return false;
         }
     }
-
 
 }
